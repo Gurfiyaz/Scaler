@@ -54,7 +54,17 @@ app.include_router(health_router)
 app.include_router(info_router)
 app.include_router(process_router)
 
-# 4. Mount Frontend Static Files at Root
+# 4. Explicitly serve index.html on root to prevent README.md fallback
 frontend_dir = Path(__file__).parent.parent / "frontend"
+
+@app.get("/")
+async def serve_index():
+    from fastapi.responses import FileResponse
+    index_path = frontend_dir / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    return {"error": "Frontend not found"}
+
+# Mount the rest of the frontend assets (css, js)
 if frontend_dir.exists():
-    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+    app.mount("/", StaticFiles(directory=str(frontend_dir)), name="frontend_assets")
