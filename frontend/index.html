@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Secure local PII Redaction Tool for Word documents (.docx). Automatically detects and redacts sensitive personal data.">
+    <title>PII Redaction Tool — Enterprise Privacy Safeguard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-group">
+                <div class="shield-icon" aria-hidden="true">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="app-title">PII Redaction Engine</h1>
+                    <p class="app-subtitle">Local, Privacy-Preserving DOCX Redaction &amp; Sanitization</p>
+                </div>
+            </div>
+            <div class="header-badges">
+                <span class="badge badge-privacy" title="Processing remains entirely local and ephemeral">
+                    <span class="pulse-dot"></span> 100% Local &amp; Ephemeral
+                </span>
+                <span class="badge badge-version">v1.0.0</span>
+            </div>
+        </header>
+
+        <!-- Privacy Assurance Notification Banner -->
+        <section class="privacy-banner" aria-label="Privacy Guarantees">
+            <div class="privacy-banner-icon">🔒</div>
+            <div class="privacy-banner-content">
+                <strong>Zero Raw PII Exposure Guarantee</strong>
+                <p>Documents are processed ephemerally in local memory/temporary storage. No original content, raw PII strings, or mapping records are displayed in the browser or saved permanently.</p>
+            </div>
+        </section>
+
+        <!-- Main Workspace Grid -->
+        <main class="main-content">
+            <!-- Upload & Drag-and-Drop Card -->
+            <section class="card upload-card" id="upload-section">
+                <h2 class="card-title">Document Selection</h2>
+                
+                <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Drag and drop a DOCX file here or click to browse files">
+                    <div class="dropzone-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <path d="M12 18v-6"/>
+                            <path d="m9 15 3-3 3 3"/>
+                        </svg>
+                    </div>
+                    <div class="dropzone-text">
+                        <span class="dropzone-primary">Drag &amp; drop your DOCX file here</span>
+                        <span class="dropzone-secondary">or <span class="browse-link">browse files</span> from your computer</span>
+                    </div>
+                    <span class="dropzone-hint">Supported format: Microsoft Word (.docx) • Max size: 20 MB</span>
+                    <input type="file" id="file-input" accept=".docx" class="visually-hidden" tabIndex="-1">
+                </div>
+
+                <!-- Selected File Metadata Panel -->
+                <div class="file-preview-panel hidden" id="file-preview">
+                    <div class="file-info">
+                        <div class="doc-icon" aria-hidden="true">📄</div>
+                        <div class="file-details">
+                            <span class="file-name" id="file-name">document.docx</span>
+                            <span class="file-size" id="file-size">0 KB</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" id="change-file-btn" aria-label="Select a different document">Change</button>
+                </div>
+
+                <!-- Action Button -->
+                <button class="btn btn-primary btn-block" id="process-btn" disabled>
+                    <span>Redact Document</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                </button>
+            </section>
+
+            <!-- Processing Progress Panel -->
+            <section class="card progress-card hidden" id="progress-section" aria-live="polite">
+                <h2 class="card-title">Processing Status</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progress-bar"></div>
+                </div>
+                <div class="status-steps">
+                    <div class="step-item active" id="step-upload">
+                        <div class="step-indicator">1</div>
+                        <span class="step-label">Uploading &amp; Validating File</span>
+                    </div>
+                    <div class="step-item" id="step-detect">
+                        <div class="step-indicator">2</div>
+                        <span class="step-label">Detecting &amp; Redacting PII</span>
+                    </div>
+                    <div class="step-item" id="step-redact">
+                        <div class="step-indicator">3</div>
+                        <span class="step-label">Validating Output</span>
+                    </div>
+                    <div class="step-item" id="step-complete">
+                        <div class="step-indicator">4</div>
+                        <span class="step-label">Complete</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Error Banner -->
+            <div class="alert alert-error hidden" id="error-alert" role="alert">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <strong id="error-title">Error Encountered</strong>
+                    <p id="error-message">Failed to process document.</p>
+                </div>
+                <button class="btn-close" id="close-error-btn" aria-label="Dismiss error notification">×</button>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════════
+                 RESULT DASHBOARD — 9 Sections
+                 ══════════════════════════════════════════════════════ -->
+            <section class="result-card hidden" id="result-section">
+
+                <!-- ① SECTION: Sanitization Complete + Download -->
+                <div class="result-header card">
+                    <div class="success-badge-group">
+                        <div class="check-circle">✓</div>
+                        <div>
+                            <h2 class="card-title" style="margin-bottom:0.125rem;">Sanitization Complete</h2>
+                            <p class="result-subtitle" id="result-filename">redacted_document.docx</p>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-success" id="download-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span>Download Redacted DOCX</span>
+                    </a>
+                </div>
+
+                <!-- ② SECTION: Executive Summary KPIs -->
+                <div class="result-section-block card">
+                    <div class="section-label">Executive Summary</div>
+                    <div class="metrics-grid" id="metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-value" id="metric-total-detected">0</span>
+                            <span class="metric-label">Total PII Entities Detected</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value" id="metric-total-replaced">0</span>
+                            <span class="metric-label">Replacements Applied</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value metric-status" id="metric-doc-valid">PASS</span>
+                            <span class="metric-label">DOCX Structure Valid</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value metric-status" id="metric-pii-clean">PASS</span>
+                            <span class="metric-label">Residual PII Check</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ③ SECTION: Detection Matrix -->
+                <div class="result-section-block card">
+                    <div class="section-label">Detection Matrix</div>
+                    <p class="section-note">Safe aggregate counts only. No raw PII values displayed.</p>
+                    <div class="category-table-wrapper">
+                        <table class="data-table" id="detection-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="num-col">Detected</th>
+                                    <th class="num-col">Redacted</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detection-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ④ SECTION: Evaluation Matrix -->
+                <div class="result-section-block card">
+                    <div class="section-header-row">
+                        <div class="section-label">Evaluation Matrix</div>
+                        <span class="eval-doc-badge" id="eval-doc-badge">—</span>
+                    </div>
+                    <p class="section-note" id="eval-note"></p>
+                    <div class="category-table-wrapper">
+                        <table class="data-table eval-table" id="eval-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="num-col">Ground Truth</th>
+                                    <th class="num-col">Predicted</th>
+                                    <th class="num-col">TP</th>
+                                    <th class="num-col">FP</th>
+                                    <th class="num-col">FN</th>
+                                    <th class="num-col">Precision</th>
+                                    <th class="num-col">Recall</th>
+                                    <th class="num-col">F1</th>
+                                    <th class="num-col">Exact Span</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eval-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ⑤ SECTION: Overall Metrics -->
+                <div class="result-section-block card">
+                    <div class="section-label">Overall Metrics</div>
+                    <div class="accuracy-note-box" id="accuracy-note-box">
+                        <span class="accuracy-label">Accuracy</span>
+                        <span class="accuracy-value" id="overall-accuracy">—</span>
+                        <p class="accuracy-explanation" id="overall-accuracy-note"></p>
+                    </div>
+                    <div class="overall-metrics-grid" id="overall-metrics-grid">
+                        <!-- injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- ⑥ SECTION: Validation Matrix -->
+                <div class="result-section-block card">
+                    <div class="section-label">Validation Matrix</div>
+                    <div class="validation-grid" id="validation-grid">
+                        <!-- injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- ⑦ SECTION: Processing Performance -->
+                <div class="result-section-block card">
+                    <div class="section-label">Processing Performance</div>
+                    <div class="category-table-wrapper">
+                        <table class="data-table" id="perf-table">
+                            <thead>
+                                <tr>
+                                    <th>Stage</th>
+                                    <th class="num-col">Time (ms)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="perf-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ⑧ SECTION: Error Analysis -->
+                <div class="result-section-block card">
+                    <div class="section-label">Error Analysis</div>
+                    <p class="section-note">Aggregate error counts only. No raw PII values displayed.</p>
+                    <div id="error-analysis-content">
+                        <!-- injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Reset Footer -->
+                <div class="result-footer">
+                    <button class="btn btn-outline-sm" id="reset-btn">Redact Another Document</button>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Enterprise PII Redaction Tool • Local Ephemeral Execution Engine</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

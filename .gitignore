@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+scratch/
+
+# Private assignment documents
+*.docx
+!tests/fixtures/synthetic/*.docx
+private_data/
+private_ground_truth.json
+ground_truth_private.json
+
+# Generated outputs
+redacted_*.docx
+processed_*.docx
+sanitized_*.docx
+output_*.docx
+*.redacted.docx
+
+# Local uploads/downloads
+uploads/
+downloads/
+outputs/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Build Artifacts
+dist/
+build/
+*.egg-info/
+*.so

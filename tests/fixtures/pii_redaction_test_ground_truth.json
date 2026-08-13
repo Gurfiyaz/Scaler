@@ -1,0 +1,214 @@
+{
+  "document": "pii_redaction_test.docx",
+  "created_at": "2026-08-14T00:00:00Z",
+  "annotator_id": "independent_human_annotator",
+  "annotations": [
+    {
+      "annotation_id": "gt_p07_person",
+      "entity_type": "PERSON",
+      "start": 15,
+      "end": 26,
+      "paragraph_index": 7
+    },
+    {
+      "annotation_id": "gt_p08_email",
+      "entity_type": "EMAIL_ADDRESS",
+      "start": 7,
+      "end": 30,
+      "paragraph_index": 8
+    },
+    {
+      "annotation_id": "gt_p09_phone",
+      "entity_type": "PHONE_NUMBER",
+      "start": 7,
+      "end": 22,
+      "paragraph_index": 9
+    },
+    {
+      "annotation_id": "gt_p11_person",
+      "entity_type": "PERSON",
+      "start": 19,
+      "end": 31,
+      "paragraph_index": 11
+    },
+    {
+      "annotation_id": "gt_p12_email",
+      "entity_type": "EMAIL_ADDRESS",
+      "start": 7,
+      "end": 31,
+      "paragraph_index": 12
+    },
+    {
+      "annotation_id": "gt_p13_phone",
+      "entity_type": "PHONE_NUMBER",
+      "start": 7,
+      "end": 22,
+      "paragraph_index": 13
+    },
+    {
+      "annotation_id": "gt_p20_org",
+      "entity_type": "ORGANIZATION",
+      "start": 9,
+      "end": 41,
+      "paragraph_index": 20
+    },
+    {
+      "annotation_id": "gt_p23_address",
+      "entity_type": "ADDRESS",
+      "start": 0,
+      "end": 18,
+      "paragraph_index": 23
+    },
+    {
+      "annotation_id": "gt_p24_address",
+      "entity_type": "ADDRESS",
+      "start": 0,
+      "end": 27,
+      "paragraph_index": 24
+    },
+    {
+      "annotation_id": "gt_p28_address",
+      "entity_type": "ADDRESS",
+      "start": 0,
+      "end": 19,
+      "paragraph_index": 28
+    },
+    {
+      "annotation_id": "gt_p29_address",
+      "entity_type": "ADDRESS",
+      "start": 0,
+      "end": 24,
+      "paragraph_index": 29
+    },
+    {
+      "annotation_id": "gt_p37_ssn",
+      "entity_type": "SSN",
+      "start": 14,
+      "end": 25,
+      "paragraph_index": 37
+    },
+    {
+      "annotation_id": "gt_p39_ssn",
+      "entity_type": "SSN",
+      "start": 12,
+      "end": 23,
+      "paragraph_index": 39
+    },
+    {
+      "annotation_id": "gt_p46_cc",
+      "entity_type": "CREDIT_CARD",
+      "start": 14,
+      "end": 33,
+      "paragraph_index": 46
+    },
+    {
+      "annotation_id": "gt_p48_cc",
+      "entity_type": "CREDIT_CARD",
+      "start": 13,
+      "end": 32,
+      "paragraph_index": 48
+    },
+    {
+      "annotation_id": "gt_p55_dob",
+      "entity_type": "DATE_OF_BIRTH",
+      "start": 15,
+      "end": 28,
+      "paragraph_index": 55
+    },
+    {
+      "annotation_id": "gt_p57_dob",
+      "entity_type": "DATE_OF_BIRTH",
+      "start": 25,
+      "end": 37,
+      "paragraph_index": 57
+    },
+    {
+      "annotation_id": "gt_p64_ip",
+      "entity_type": "IP_ADDRESS",
+      "start": 18,
+      "end": 31,
+      "paragraph_index": 64
+    },
+    {
+      "annotation_id": "gt_p66_ip",
+      "entity_type": "IP_ADDRESS",
+      "start": 19,
+      "end": 30,
+      "paragraph_index": 66
+    },
+    {
+      "annotation_id": "gt_p73_person",
+      "entity_type": "PERSON",
+      "start": 10,
+      "end": 22,
+      "paragraph_index": 73
+    },
+    {
+      "annotation_id": "gt_p74_email",
+      "entity_type": "EMAIL_ADDRESS",
+      "start": 7,
+      "end": 31,
+      "paragraph_index": 74
+    },
+    {
+      "annotation_id": "gt_p75_phone",
+      "entity_type": "PHONE_NUMBER",
+      "start": 7,
+      "end": 22,
+      "paragraph_index": 75
+    },
+    {
+      "annotation_id": "gt_p76_dob",
+      "entity_type": "DATE_OF_BIRTH",
+      "start": 15,
+      "end": 31,
+      "paragraph_index": 76
+    },
+    {
+      "annotation_id": "gt_p79_org",
+      "entity_type": "ORGANIZATION",
+      "start": 0,
+      "end": 30,
+      "paragraph_index": 79
+    },
+    {
+      "annotation_id": "gt_p82_address",
+      "entity_type": "ADDRESS",
+      "start": 0,
+      "end": 10,
+      "paragraph_index": 82
+    },
+    {
+      "annotation_id": "gt_p83_address",
+      "entity_type": "ADDRESS",
+      "start": 0,
+      "end": 27,
+      "paragraph_index": 83
+    },
+    {
+      "annotation_id": "gt_p86_ip",
+      "entity_type": "IP_ADDRESS",
+      "start": 12,
+      "end": 23,
+      "paragraph_index": 86
+    },
+    {
+      "annotation_id": "gt_p88_ssn",
+      "entity_type": "SSN",
+      "start": 5,
+      "end": 16,
+      "paragraph_index": 88
+    },
+    {
+      "annotation_id": "gt_p90_cc",
+      "entity_type": "CREDIT_CARD",
+      "start": 13,
+      "end": 32,
+      "paragraph_index": 90
+    }
+  ],
+  "metadata": {
+    "description": "Independent manual ground truth annotation for pii_redaction_test.docx",
+    "total_annotated_entities": 28
+  }
+}

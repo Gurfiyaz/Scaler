@@ -1,0 +1,31 @@
+# Render Infrastructure-as-Code (render.yaml)
+# Production Web Service Manifest for PII Redaction Tool
+
+services:
+  - type: web
+    name: pii-redaction-tool
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt && python -m spacy download en_core_web_sm
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_NAME
+        value: PII Redaction Tool
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: HOST
+        value: 0.0.0.0
+      - key: LOG_LEVEL
+        value: INFO
+      - key: MASK_LOG_PII
+        value: "true"
+      - key: MAX_UPLOAD_SIZE_MB
+        value: "20"
+      - key: DOWNLOAD_TTL_SECONDS
+        value: "600"
+      - key: ALLOWED_ORIGINS
+        value: "*"

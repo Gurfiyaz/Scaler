@@ -1,0 +1,74 @@
+{
+  "document": "test_synthetic_eval.docx",
+  "created_at": "2026-08-13T22:32:00Z",
+  "annotator_id": "synthetic_test_generator",
+  "annotations": [
+    {
+      "annotation_id": "synth_p0_person",
+      "entity_type": "PERSON",
+      "start": 0,
+      "end": 13,
+      "paragraph_index": 0
+    },
+    {
+      "annotation_id": "synth_p0_email",
+      "entity_type": "EMAIL_ADDRESS",
+      "start": 15,
+      "end": 33,
+      "paragraph_index": 0
+    },
+    {
+      "annotation_id": "synth_p1_phone",
+      "entity_type": "PHONE_NUMBER",
+      "start": 0,
+      "end": 15,
+      "paragraph_index": 1
+    },
+    {
+      "annotation_id": "synth_p1_org",
+      "entity_type": "ORGANIZATION",
+      "start": 17,
+      "end": 35,
+      "paragraph_index": 1
+    },
+    {
+      "annotation_id": "synth_p2_address",
+      "entity_type": "ADDRESS",
+      "start": 0,
+      "end": 28,
+      "paragraph_index": 2
+    },
+    {
+      "annotation_id": "synth_p2_ssn",
+      "entity_type": "SSN",
+      "start": 30,
+      "end": 41,
+      "paragraph_index": 2
+    },
+    {
+      "annotation_id": "synth_p3_cc",
+      "entity_type": "CREDIT_CARD",
+      "start": 0,
+      "end": 19,
+      "paragraph_index": 3
+    },
+    {
+      "annotation_id": "synth_p3_dob",
+      "entity_type": "DATE_OF_BIRTH",
+      "start": 21,
+      "end": 31,
+      "paragraph_index": 3
+    },
+    {
+      "annotation_id": "synth_p4_ip",
+      "entity_type": "IP_ADDRESS",
+      "start": 0,
+      "end": 13,
+      "paragraph_index": 4
+    }
+  ],
+  "metadata": {
+    "is_synthetic": true,
+    "covers_all_9_categories": true
+  }
+}
