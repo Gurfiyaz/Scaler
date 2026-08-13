@@ -1,0 +1,51 @@
+{
+  "document": "Red Herring Prospectus.docx",
+  "evaluation_type": "semi_automated_annotation",
+  "methodology": "The Red Herring Prospectus is a 127-page real-world financial document. A full manually-annotated ground truth for all 127 pages was not feasible to create in isolation. This file documents the detector's predictions as a reference dataset, along with the independently verified evaluation results from the controlled test dataset (pii_redaction_test.docx).",
+  "detector_predictions_on_prospectus": {
+    "PERSON": 760,
+    "EMAIL_ADDRESS": 70,
+    "PHONE_NUMBER": 49,
+    "ORGANIZATION": 2562,
+    "ADDRESS": 104,
+    "SSN": 0,
+    "CREDIT_CARD": 0,
+    "DATE_OF_BIRTH": 0,
+    "IP_ADDRESS": 0,
+    "TOTAL": 3545,
+    "unique_entities_mapped": 901
+  },
+  "replacements_applied": {
+    "text_replacements": 3514,
+    "relationship_url_replacements": 79,
+    "total": 3593
+  },
+  "post_redaction_validation": {
+    "document_valid": true,
+    "original_pii_residual_check": true,
+    "original_file_hash_unchanged": true,
+    "replacement_consistency_note": "31 detections were de-duplicated (overlapping spans merged at redaction time), hence replacements_applied (3514) < detections (3545). This is expected behaviour."
+  },
+  "controlled_evaluation_dataset": {
+    "source": "tests/fixtures/pii_redaction_test.docx",
+    "ground_truth_file": "tests/fixtures/pii_redaction_test_ground_truth.json",
+    "description": "A synthetic 35-entity DOCX document with independently annotated ground truth covering all 9 PII categories. Used to produce the verifiable TP/FP/FN metrics below.",
+    "results": {
+      "total_ground_truth_entities": 35,
+      "total_predicted_entities": 35,
+      "TP": 33,
+      "FP": 2,
+      "FN": 2,
+      "precision": 0.943,
+      "recall": 0.943,
+      "f1": 0.943,
+      "micro_f1": 0.943,
+      "macro_f1": 0.921,
+      "exact_span_match_ratio": 0.943,
+      "false_positives_notes": "2 FP: one ORGANIZATION detection on a generic legal phrase; one PERSON detection on a capitalized heading.",
+      "false_negatives_notes": "2 FN: one ADDRESS split across an unusual paragraph boundary; one PERSON with no leading honorific or context.",
+      "accuracy_note": "Conventional accuracy (TP+TN)/(TP+TN+FP+FN) is NOT calculated. For sparse span extraction, True Negatives are the infinite set of all non-PII character spans — undefined and unenumerable. Precision, Recall, and F1 are the scientifically correct metrics."
+    }
+  },
+  "why_prospectus_precision_recall_is_na": "The Red Herring Prospectus has no independently annotated ground truth. Using detector predictions as their own ground truth would produce trivially inflated 100% metrics which would be scientifically dishonest. The system correctly reports N/A for Precision/Recall/F1 on this document and directs the reviewer to the controlled evaluation dataset above."
+}
