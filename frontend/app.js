@@ -129,15 +129,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData,
             });
 
-            const data = await response.json();
+            // Safe JSON parse — never blindly call .json() without content-type check.
+            // If the server returns an empty body or HTML error page, show a safe message.
+            let data = null;
+            try {
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    // Non-JSON response (e.g., unexpected server error)
+                    await response.text(); // consume body
+                    data = null;
+                }
+            } catch (_parseErr) {
+                data = null;
+            }
 
             if (!response.ok) {
-                const errMsg = typeof data.detail === 'object' && data.detail?.message
-                    ? data.detail.message
-                    : (data.message || 'Unable to process document. Please verify it is a valid DOCX file.');
-                const errTitle = typeof data.detail === 'object' && data.detail?.error
-                    ? data.detail.error : 'Processing Error';
+                let errMsg = 'Unable to process document. Please verify it is a valid .docx file and try again.';
+                let errTitle = 'Processing Error';
+                if (data) {
+                    if (typeof data.detail === 'object' && data.detail?.message) {
+                        errMsg = data.detail.message;
+                        errTitle = data.detail.error || errTitle;
+                    } else if (data.message) {
+                        errMsg = data.message;
+                        errTitle = data.error || errTitle;
+                    }
+                }
                 showError(errTitle, errMsg);
+                progressSection.classList.add('hidden');
+                processBtn.disabled = false;
+                return;
+            }
+
+            if (!data) {
+                showError('Processing Error', 'Received an unexpected response from the server. Please try again.');
                 progressSection.classList.add('hidden');
                 processBtn.disabled = false;
                 return;
@@ -155,11 +182,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             console.error('Processing error:', err);
-            showError('Unable to Process Document', 'Could not communicate with the local redaction server. Please verify server status and try again.');
+            showError('Unable to Process Document', 'Could not communicate with the redaction server. Please verify the server is running and try again.');
             progressSection.classList.add('hidden');
             processBtn.disabled = false;
         }
     });
+
 
     // ── Progress Stages ────────────────────────────────────────
     function updateProgressStage(stageNum, percent) {

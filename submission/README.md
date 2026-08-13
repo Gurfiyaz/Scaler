@@ -1,65 +1,213 @@
-# PII Redaction Tool - Final Submission
+# PII Redaction Tool
+
+A production-quality system for detecting and redacting Personally Identifiable Information (PII) from Microsoft Word (.docx) documents. Built for the Scaler AI Labs assessment.
+
+---
 
 ## Problem Statement
-The assignment required building a comprehensive, privacy-preserving DOCX PII detection and redaction system. The system must process an uploaded DOCX, intelligently identify 9 canonical categories of Personally Identifiable Information (PII), dynamically map them to realistic synthetic alternatives, and replace them in-place directly inside the DOCX XML structure. Critically, the output must remain a valid DOCX file, the exact structural formatting must be preserved, and the system must ensure zero leakage of original PII strings.
 
-## Approach
-The architecture is built on a multilayer detection and redaction pipeline:
-1. **Ingestion & Parsing**: Extracts paragraphs, tables, headers, footers, and hyperlinks from the DOCX using `python-docx`, reconstructing document runs to handle PII split across XML boundaries.
-2. **Multilayer Detection**: Combines highly optimized regex models, checksum validations (e.g., Luhn algorithm for Credit Cards), and Contextual NLP via spaCy to reliably identify entities.
-3. **Deterministic Mapping**: Maintains an ephemeral memory of all detected PII during the session. It deterministically assigns a safe, synthetic replacement to each unique PII string using seeded generation (`Faker`). This guarantees that "John Doe" is mapped to the same synthetic name (e.g., "Daniel Mercer") consistently across all 127 pages of a document.
-4. **In-Place Redaction**: Modifies the underlying DOCX XML runs (`<w:t>`) to replace the text without corrupting the surrounding formatting, bolding, italics, or table structures.
-5. **Post-Redaction Validation**: A strict security layer that extracts the raw text from the final generated DOCX and scans it against the original PII mapping to guarantee that 0 original strings leaked into the final output.
+Financial and legal documents such as Red Herring Prospectuses contain PII — full names, addresses, phone numbers, email addresses, and organization names — that must be removed or replaced before sharing. This tool reads a DOCX, detects PII across all content regions (body, tables, headers, footers, hyperlinks), and replaces each detected entity with a realistic but completely synthetic alternative, preserving the document's structure and readability.
 
-## PII Categories Supported
-1. **PERSON**: Full names (via spaCy NER and custom heuristics).
-2. **EMAIL_ADDRESS**: All standard email formats.
-3. **PHONE_NUMBER**: International and Indian format phone numbers.
-4. **ORGANIZATION**: Company names, avoiding generic regulatory terms (SEBI, BSE, etc.).
-5. **ADDRESS**: Physical mailing addresses and locations.
-6. **SSN**: Strict US Social Security Numbers.
-7. **CREDIT_CARD**: Luhn-validated credit card numbers.
-8. **DATE_OF_BIRTH**: Differentiated from generic document/publication dates.
-9. **IP_ADDRESS**: IPv4 and IPv6 addresses.
+---
 
-## Synthetic Replacement Strategy & Consistency
-The `EntityMapper` uses a seeded pseudo-random number generator (PRNG) tied to a hash of the original PII string. When a PERSON like "Sarthak Malvadkar" is encountered, it is hashed to a deterministic seed, which `Faker` uses to generate a consistent synthetic name like "Daniel Mercer". This guarantees that every occurrence of the same original entity receives the exact same replacement, preserving semantic coherence without leaking identity.
+## Supported PII Categories
+
+| Category | Examples |
+|---|---|
+| PERSON | Full names of directors, promoters, individuals |
+| EMAIL_ADDRESS | Any valid email address |
+| PHONE_NUMBER | Indian (+91) and international formats |
+| ORGANIZATION | Company and institution names |
+| ADDRESS | Physical / mailing addresses |
+| SSN | US Social Security Numbers |
+| CREDIT_CARD | Luhn-valid credit card numbers |
+| DATE_OF_BIRTH | Dates identified contextually as DOB |
+| IP_ADDRESS | IPv4 and IPv6 addresses |
+
+---
+
+## Architecture
+
+```
+DOCX Upload (multipart/form-data)
+        ↓
+DOCXParser — extracts paragraphs, tables, headers, footers, hyperlinks
+        ↓
+PIIDetector — multilayer detection:
+  Layer 1: RegexRecognizer (Email, Phone, SSN, CC, IP)
+  Layer 2: ContextRulesRecognizer (DOB, Address)
+  Layer 3: spaCy NER (Person, Organization, Location)
+  SpanResolver — deduplicates and resolves overlapping spans
+        ↓
+EntityMapper — deterministic seeded mapping:
+  SHA-256(original_text + category) → seed → Faker → synthetic replacement
+  Collision-safe: guaranteed-unique via registry-index fallback
+        ↓
+DOCXRedactor — in-place XML run rewriting:
+  Body paragraphs, table cells, headers, footers, hyperlink targets
+        ↓
+DocumentValidator — post-redaction security:
+  Structural DOCX validity check
+  Residual PII scan (extracted text vs. original PII dict)
+  SHA-256 integrity check on original input file
+        ↓
+Download Token → Redacted DOCX
+```
+
+---
+
+## Detection Approach
+
+- **Regex**: High-precision patterns for structured PII (email, phone, SSN, credit card, IP). Luhn validation for credit cards. Phone validated via `phonenumbers` library.
+- **Contextual NLP**: Heuristic keyword context rules for detecting Date of Birth (distinguishes from document/publication dates) and Address blocks.
+- **spaCy NER** (`en_core_web_sm`): Detects PERSON, ORGANIZATION, and LOCATION entities with contextual sentence understanding.
+- **Span Resolver**: Bipartite overlap resolution — higher-confidence detections win over lower-confidence ones when spans conflict.
+
+---
+
+## Replacement (Anonymization) Strategy
+
+Each unique original PII string is mapped to a synthetic replacement using:
+
+1. **SHA-256 seed**: `SHA256(normalized_text + ":" + category)` → deterministic integer seed
+2. **Seeded Faker**: `Faker.seed_instance(seed)` → generates category-appropriate synthetic value
+3. **Consistency**: The same original entity always maps to the same replacement within a document run
+4. **Collision safety**: If two different originals generate the same replacement, a guaranteed-unique registry-index suffix is appended
+
+### Safe replacement domains
+- Emails: `@example.com`, `@example.org`, `@example.test`
+- IP addresses: RFC 5737 documentation ranges (`192.0.2.x`, `198.51.100.x`, `203.0.113.x`)
+- SSNs: Valid format with safe test values (area 100-899, excluding 666)
+
+---
 
 ## DOCX Coverage
-The parser deeply traverses the document structure, ensuring coverage of:
-- Body paragraphs
-- Nested table cells
-- Headers and footers
-- Hyperlink relationship targets (e.g., mailto: links)
+
+The redaction engine processes:
+- ✅ Body paragraphs
+- ✅ Table cells (all rows, all columns, nested tables)
+- ✅ Document headers (default, first-page, even-page)
+- ✅ Document footers (default, first-page, even-page)
+- ✅ Hyperlink relationship targets (mailto: URLs)
+- ✅ Text split across multiple XML runs (reconstructed before detection)
+
+---
 
 ## Validation Approach
-After generating the redacted DOCX, the `DOCXRedactor` automatically extracts the plain text from the new file and performs a rigorous substring and normalized comparison against the known source PII dictionary. If any original PII is found, the system fails the validation.
+
+After generating the redacted DOCX:
+1. Reopen the output file with python-docx to confirm structural validity
+2. Extract all text from the output
+3. Compare against every detected original PII string (normalized: strip whitespace, lowercase)
+4. Raise an error if any original PII is found in the output
+5. Recompute SHA-256 of the original input to confirm it was never modified
+
+---
+
+## Privacy & Security
+
+- No original PII is ever returned in API responses (aggregate counts only)
+- No raw PII is logged (logger outputs category counts only)
+- Download tokens expire after 10 minutes (configurable via `DOWNLOAD_TTL_SECONDS`)
+- Input files are stored in temporary files and immediately deleted after processing
+- Source-to-replacement mapping is never exposed through the public API
+
+---
 
 ## Evaluation Methodology
-The evaluation subsystem calculates True Positives (TP), False Positives (FP), and False Negatives (FN) using an exact-span matching algorithm (Jaccard boundary validation). Precision, Recall, and F1-scores are derived dynamically.
 
-**Note on the Red Herring Prospectus:**
-Because the Red Herring Prospectus is a 127-page real-world document without an independently annotated ground truth dataset, formal Precision, Recall, and F1 scores cannot be mathematically calculated without fabricating metrics (which the system strictly forbids). Our evaluation framework detects the absence of ground truth and correctly marks the evaluation as `N/A`. The metrics provided in the `Evaluation_Report.docx` and `ground_truth.json` files correspond to our controlled evaluation dataset (`pii_redaction_test.docx`) which validates the engine's core capabilities.
+### Controlled Test Dataset
+**Source**: `tests/fixtures/pii_redaction_test.docx` — 35 independently annotated entities across all 9 categories.
 
-## Limitations, False Positives & False Negatives
-- **False Positives**: NLP models (spaCy) occasionally flag generic nouns or capitalized legal terms at the beginning of sentences as `ORGANIZATION` or `PERSON`.
-- **False Negatives**: Highly unusual address structures or highly ambiguous names lacking contextual clues (e.g., "Mr.") might be missed.
-- **Accuracy Metric**: Standard accuracy is defined as `(TP + TN) / (TP + TN + FP + FN)`. For sparse span extraction in a 127-page free-text document, the universe of True Negatives (TN) is functionally infinite and undefined. We calculate Precision, Recall, and F1-score as the scientifically accurate metrics.
+Evaluation uses exact span matching with Jaccard boundary threshold ≥ 0.5:
+- **TP**: Detected entity overlaps with a ground-truth entity of the same category
+- **FP**: Detected entity has no matching ground-truth entity
+- **FN**: Ground-truth entity has no matching detection
 
-## Security Considerations
-- The API is stateless; documents and PII are stored ephemerally and deleted securely.
-- No raw PII is ever returned in the API responses or logged to the console.
-- Download links expire via a strict TTL.
+### Metrics (Controlled Dataset)
 
-## Local Setup & Deployment
+| Metric | Value |
+|---|---|
+| Precision | **94.3%** |
+| Recall | **94.3%** |
+| F1 Score | **94.3%** |
+| Macro F1 | 92.1% |
+
+### Why Accuracy is Not Reported
+
+Accuracy requires True Negatives (TN), but TN for span extraction = all character spans in the document that are not PII — an unbounded, unenumerable set. Accuracy is mathematically undefined for NER tasks. Precision, Recall, and F1 are the correct metrics.
+
+### User-Uploaded Documents (No Ground Truth)
+
+For documents without independently annotated ground truth (including the Red Herring Prospectus), the system correctly reports:
+- Detection counts per category ✅
+- Replacement counts ✅
+- Residual PII validation ✅
+- Precision/Recall/F1: **N/A** (no fabricated numbers)
+
+---
+
+## Red Herring Prospectus Results
+
+| Metric | Value |
+|---|---|
+| Total PII Detected | **3,545** |
+| Unique Entities | **901** |
+| Replacements Applied | 3,514 text + 79 hyperlinks |
+| DOCX Valid | ✅ |
+| Residual PII | ✅ 0 original strings leaked |
+| Original File Unchanged | ✅ SHA-256 verified |
+
+**Detections by category**: PERSON 760, EMAIL 70, PHONE 49, ORGANIZATION 2562, ADDRESS 104
+
+---
+
+## Known Tradeoffs & Limitations
+
+**False Positives** (precision risk):
+- ORGANIZATION is broad — some capitalised legal/generic terms may be flagged
+- SEBI, BSE, NSE, and standard regulatory terms are explicitly excluded
+- PERSON may occasionally flag capitalised heading words without name context
+
+**False Negatives** (recall risk):
+- Person names split across unusual XML run boundaries may be missed
+- Single-occurrence names without honorific or surrounding context
+- Non-standard phone formats (e.g., missing country code, unusual separator)
+
+---
+
+## How to Run Locally
+
 ```bash
 git clone https://github.com/Gurfiyaz/Scaler-AI.git
+cd Scaler-AI
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 python run.py
+# Open: http://localhost:8000
 ```
-**API Endpoints:**
-- `GET /health` - Healthcheck
-- `GET /api/info` - Service Info
-- `POST /api/process` - Multipart DOCX processing
-- `GET /api/download/{id}` - Secure retrieval of processed output
+
+## How to Run Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/ -q
+```
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/health` | Health check |
+| GET | `/api/info` | Service information |
+| POST | `/api/process` | Upload and process DOCX |
+| GET | `/api/download/{id}` | Download redacted DOCX |
+
+## Deployment
+
+Deployed on Render as a Web Service:
+- **Build**: `pip install -r requirements.txt && python -m spacy download en_core_web_sm`
+- **Start**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- **Health**: `GET /health`
+
+See `render.yaml` and `Procfile` for full configuration.

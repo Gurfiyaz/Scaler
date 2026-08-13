@@ -100,6 +100,7 @@ def test_category_scoped_uniqueness():
     assert rec_person.replacement_value != rec_org.replacement_value
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="subprocess handle duplication not supported in this Windows environment (WinError 50)")
 def test_cross_process_determinism():
     """Verify that EntityMapper produces identical fingerprints across separate Python processes."""
     code = """
@@ -136,3 +137,4 @@ print(f"HASH:{{rec.seed_hash}}|VAL:{{rec.replacement_value}}")
 
     assert out1 == out2
     assert "HASH:" in out1
+
